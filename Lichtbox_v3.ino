@@ -130,7 +130,6 @@ void powerOff() {
   fanDuty = 0;
   fan.reset();
   digitalWrite(PIN_RELAIS, LOW);
-  Serial.println(F("long press: power off (relay LOW)"));
 }
 
 void powerOn() {
@@ -217,18 +216,10 @@ int checkButton() {  //0= no press, 1 = press, 2= long press
   if ((ButtonState != 1) and (!modeLevel)) {
     ButtonState = 1;
     ButtonLastTime = millis();
-    Serial.print(F("["));
-    Serial.print(ButtonLastTime);
-    Serial.println(F(" ms] MODE pin went LOW (press detected)"));
   }
   if ((ButtonState == 1) and (modeLevel)) {
     unsigned long held = millis() - ButtonLastTime;
     ButtonState = 0;
-    Serial.print(F("["));
-    Serial.print(millis());
-    Serial.print(F(" ms] MODE pin went HIGH (released after "));
-    Serial.print(held);
-    Serial.println(F(" ms)"));
     if (held > 1400) {
       ButtonLastTime = millis();
       return 2;
@@ -399,10 +390,6 @@ void IndicateButton(bool longpress) {
   int r = longpress ? 100 : 0;
   int g = longpress ? 0 : 100;
   int b = 0;
-  Serial.print(F("Indicate button: "));
-  Serial.print(longpress ? F("long press, red=") : F("short press, green="));
-  Serial.print(longpress ? r : g);
-  Serial.println(F(" (100 ms)"));
   analogWrite(PIN_RED, r);
   analogWrite(PIN_GREEN, g);
   analogWrite(PIN_BLUE, b);
@@ -436,10 +423,6 @@ void loop() {
     if (state == 1) {
       randomStroboReset();
     }
-    Serial.print(F("state "));
-    Serial.print(oldState);
-    Serial.print(F(" -> "));
-    Serial.println(state);
   }
   if (button == 2) {
     IndicateButton(1);
@@ -448,59 +431,26 @@ void loop() {
   }
   if ((millis() - lastCycle) > CycleTime) {
     lastCycle = millis();
-    Serial.print(F("Temp: "));
-    Serial.println(temp);
-    Serial.print(F("tempRaw: "));
-    Serial.print(tempRaw);
-    Serial.print(F(" fanDuty: "));
-    Serial.print(fanDuty);
-    Serial.print(F(" ledDemand: "));
-    Serial.print(ledPower.average(), 3);
-    Serial.print(F(" ledCap: "));
-    Serial.print(derate.cap, 3);
-    Serial.println(derate.tripped ? F(" TRIPPED") : F(""));
-    Serial.print(F("ModeButton: "));
-    Serial.println(digitalRead(PIN_MODE));
-    Serial.print(F("State: "));
-    Serial.println(state);
-    Serial.print(F("brightnessRaw: "));
-    Serial.print(diagBrightness);
-    Serial.print(F(" effectRaw: "));
-    Serial.print(analogRead(PIN_EFFECT));
-    Serial.print(F(" pwm: "));
-    Serial.print(diagLastR);
-    Serial.print('/');
-    Serial.print(diagLastG);
-    Serial.print('/');
-    Serial.println(diagLastB);
-    Serial.print(F("buttonState: "));
-    Serial.print(ButtonState);
-    Serial.print(F(" b_red/green/blue: "));
-    Serial.print(b_red);
-    Serial.print('/');
-    Serial.print(b_green);
-    Serial.print('/');
-    Serial.println(b_blue);
   }
 
   switch (state) {
     case 0:
-      SteadyColour();
+      Flashlight();
       break;
     case 1:
-      RandomStrobo();
+      SteadyColour();
       break;
     case 2:
       rainbow(analogRead(PIN_EFFECT));
       break;
     case 3:
-      WhiteStrobe();
+     RandomStrobo();
       break;
     case 4:
-      Flashlight();
+      WhiteStrobe();
       break;
     default:
-      SteadyColour();
+      Flashlight();
       break;
   }
 }
